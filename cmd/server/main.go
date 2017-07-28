@@ -1,19 +1,15 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 )
 
-var (
-	flagBind = flag.String("bind", ":8087", "bind address")
+const (
+	envBind = "ECHO_BIND"
 )
-
-func init() {
-	flag.Parse()
-}
 
 func echoHandler(w http.ResponseWriter, r *http.Request) {
 	url := r.URL
@@ -62,7 +58,11 @@ func onError(w http.ResponseWriter, cause string, err error) {
 }
 
 func main() {
-	log.Printf("Serving on %s", *flagBind)
+	bind := os.Getenv(envBind)
+	if bind == "" {
+		log.Fatal("Must specify environment variable ECHO_BIND")
+	}
+	log.Printf("Serving on %s", bind)
 	http.HandleFunc("/", echoHandler)
-	log.Println(http.ListenAndServe(*flagBind, nil))
+	log.Println(http.ListenAndServe(bind, nil))
 }
